@@ -24,7 +24,7 @@ const StorageGDrive = StorageBase.extend({
             if (err) { return callback && callback(err); }
             this.logger.debug('Load', path);
             const ts = this.logger.ts();
-            const url = this._baseUrl + '/files/{id}/revisions/{rev}?alt=media'
+            const url = this._baseUrl + '/files/{id}/revisions/{rev}?alt=media&supportsTeamDrives=true'
                 .replace('{id}', path)
                 .replace('{rev}', stat.rev);
             this._xhr({
@@ -52,7 +52,7 @@ const StorageGDrive = StorageBase.extend({
             }
             this.logger.debug('Stat', path);
             const ts = this.logger.ts();
-            const url = this._baseUrl + '/files/{id}?fields=headRevisionId'
+            const url = this._baseUrl + '/files/{id}?fields=headRevisionId&supportsTeamDrives=true'
                 .replace('{id}', path);
             this._xhr({
                 url: url,
@@ -89,7 +89,7 @@ const StorageGDrive = StorageBase.extend({
                 const isNew = path.lastIndexOf(NewFileIdPrefix, 0) === 0;
                 let url;
                 if (isNew) {
-                    url = this._baseUrlUpload + '/files?uploadType=multipart&fields=id,headRevisionId';
+                    url = this._baseUrlUpload + '/files?uploadType=multipart&fields=id,headRevisionId&supportsTeamDrives=true';
                     const fileName = path.replace(NewFileIdPrefix, '') + '.kdbx';
                     const boundry = 'b' + Date.now() + 'x' + Math.round(Math.random() * 1000000);
                     data = new Blob([
@@ -102,7 +102,7 @@ const StorageGDrive = StorageBase.extend({
                         '--', boundry, '--', '\r\n'
                     ], { type: 'multipart/related; boundary="' + boundry + '"' });
                 } else {
-                    url = this._baseUrlUpload + '/files/{id}?uploadType=media&fields=headRevisionId'
+                    url = this._baseUrlUpload + '/files/{id}?uploadType=media&fields=headRevisionId&supportsTeamDrives=true'
                         .replace('{id}', path);
                     data = new Blob([data], { type: 'application/octet-stream' });
                 }
@@ -135,7 +135,8 @@ const StorageGDrive = StorageBase.extend({
             let query = dir === 'shared' ? 'sharedWithMe=true'
                 : dir ? `parents="${dir}"` : 'parents="root"';
             query += 'and trashed=false';
-            const url = this._baseUrl + '/files?fields={fields}&q={q}'
+            query += 'and fileExtension="kdbx"';
+            const url = this._baseUrl + '/files?fields={fields}&q={q}&supportsTeamDrives=true&includeTeamDriveItems=true'
                 .replace('{fields}', encodeURIComponent('files(id,name,mimeType,headRevisionId)'))
                 .replace('{q}', encodeURIComponent(query));
             const ts = this.logger.ts();
@@ -175,7 +176,7 @@ const StorageGDrive = StorageBase.extend({
     remove: function(path, callback) {
         this.logger.debug('Remove', path);
         const ts = this.logger.ts();
-        const url = this._baseUrl + '/files/{id}'.replace('{id}', path);
+        const url = this._baseUrl + '/files/{id}?supportsTeamDrives=true'.replace('{id}', path);
         this._xhr({
             url: url,
             method: 'DELETE',
