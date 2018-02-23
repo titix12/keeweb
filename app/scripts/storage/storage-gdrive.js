@@ -134,11 +134,11 @@ const StorageGDrive = StorageBase.extend({
             this.logger.debug('List');
             let query = dir === 'shared' ? 'sharedWithMe=true'
                 : dir ? `parents="${dir}"` : 'parents="root"';
-            query += 'and trashed=false';
-            query += 'and fileExtension="kdbx"';
-            const url = this._baseUrl + '/files?fields={fields}&q={q}&supportsTeamDrives=true&includeTeamDriveItems=true'
+            query = 'fileExtension="kdbx" and trashed=false';
+            const url = this._baseUrl + '/files?fields={fields}&q={q}&supportsTeamDrives=true&includeTeamDriveItems=true&corpora={corpora}'
                 .replace('{fields}', encodeURIComponent('files(id,name,mimeType,headRevisionId)'))
-                .replace('{q}', encodeURIComponent(query));
+                .replace('{q}', encodeURIComponent(query))
+                .replace('{corpora}', encodeURIComponent('user,allTeamDrives'));
             const ts = this.logger.ts();
             this._xhr({
                 url: url,
